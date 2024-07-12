@@ -1,0 +1,52 @@
+// PaymentScreen.js
+import React, { useState } from 'react';
+import { Button, TextInput, View, Text } from 'react-native';
+import { CardField, useStripe } from '@stripe/stripe-react-native';
+import axios from 'axios';
+
+const PaymentScreen = () => {
+  const [amount, setAmount] = useState('');
+  const { confirmPayment } = useStripe();
+
+  const handlePayPress = async () => {
+    const response = await axios.post('http://localhost:3001/payment', {
+      amount: parseInt(amount, 10) * 100, // Stripe expects amount in cents
+      currency: 'usd',
+      paymentMethodId: 'pm_card_visa',
+    });
+    if (response.data.error) {
+      alert(`Payment failed: ${response.data.error}`);
+    } else {
+      alert('Payment successful!');
+    }
+  };
+
+  return (
+    <View>
+      <TextInput
+        placeholder="Amount"
+        keyboardType="numeric"
+        value={amount}
+        onChangeText={setAmount}
+      />
+      <CardField
+        postalCodeEnabled={false}
+        placeholder={{
+          number: '4242 4242 4242 4242',
+        }}
+        cardStyle={{
+          backgroundColor: '#FFFFFF',
+          textColor: '#000000',
+        }}
+        style={{
+          width: '100%',
+          height: 50,
+          marginVertical: 30,
+        }}
+      />
+      <Button title="Pay" onPress={handlePayPress} />
+    </View>
+  );
+};
+
+export default PaymentScreen;
