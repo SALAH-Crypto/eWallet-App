@@ -1,0 +1,60 @@
+// BudgetScreen.js
+import React, { useState, useEffect } from 'react';
+import { Button, TextInput, View, Text, FlatList } from 'react-native';
+import axios from 'axios';
+import { AuthContext } from './AuthContext';
+
+const BudgetScreen = () => {
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
+  const [budgets, setBudgets] = useState([]);
+  const { user } = React.useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchBudgets = async () => {
+      const response = await axios.get(`http://localhost:3002/budget/${user.email}`);
+      setBudgets(response.data);
+    };
+    fetchBudgets();
+  }, [user.email]);
+
+  const handleAddBudget = async () => {
+    await axios.post('http://localhost:3002/budget', {
+      userId: user.email,
+      amount,
+      category,
+      date: new Date(),
+    });
+    setAmount('');
+    setCategory('');
+    fetchBudgets();
+  };
+
+  return (
+    <View>
+      <TextInput
+        placeholder="Amount"
+        keyboardType="numeric"
+        value={amount}
+        onChangeText={setAmount}
+      />
+      <TextInput
+        placeholder="Category"
+        value={category}
+        onChangeText={setCategory}
+      />
+      <Button title="Add Budget" onPress={handleAddBudget} />
+      <FlatList
+        data={budgets}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <View>
+            <Text>{item.category}: ${item.amount}</Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+};
+
+export default BudgetScreen;
