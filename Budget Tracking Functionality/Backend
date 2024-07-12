@@ -1,0 +1,29 @@
+// budget.js
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const Budget = require('./models/Budget');
+
+const app = express();
+app.use(bodyParser.json());
+
+mongoose.connect('mongodb://localhost/eWallet', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+app.post('/budget', async (req, res) => {
+  const { userId, amount, category, date } = req.body;
+  const budget = new Budget({ userId, amount, category, date });
+  await budget.save();
+  res.status(201).send('Budget entry created');
+});
+
+app.get('/budget/:userId', async (req, res) => {
+  const budgets = await Budget.find({ userId: req.params.userId });
+  res.json(budgets);
+});
+
+app.listen(3002, () => {
+  console.log('Budget server running on port 3002');
+});
